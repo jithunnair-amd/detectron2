@@ -53,38 +53,9 @@ def get_extensions():
             True if ((torch.version.hip is not None) and (ROCM_HOME is not None)) else False
         )
 
-    if is_rocm_pytorch:
-        hipify_python.hipify(
-            project_directory=this_dir,
-            output_directory=this_dir,
-            includes="/detectron2/layers/csrc/*",
-            show_detailed=True,
-            is_pytorch_extension=True,
-        )
-
-        # Current version of hipify function in pytorch creates an intermediate directory
-        # named "hip" at the same level of the path hierarchy if a "cuda" directory exists,
-        # or modifying the hierarchy, if it doesn't. Once pytorch supports
-        # "same directory" hipification (https://github.com/pytorch/pytorch/pull/40523),
-        # the source_cuda will be set similarly in both cuda and hip paths, and the explicit
-        # header file copy (below) will not be needed.
-        source_cuda = glob.glob(path.join(extensions_dir, "**", "hip", "*.hip")) + glob.glob(
-            path.join(extensions_dir, "hip", "*.hip")
-        )
-
-        shutil.copy(
-            "detectron2/layers/csrc/box_iou_rotated/box_iou_rotated_utils.h",
-            "detectron2/layers/csrc/box_iou_rotated/hip/box_iou_rotated_utils.h",
-        )
-        shutil.copy(
-            "detectron2/layers/csrc/deformable/deform_conv.h",
-            "detectron2/layers/csrc/deformable/hip/deform_conv.h",
-        )
-
-    else:
-        source_cuda = glob.glob(path.join(extensions_dir, "**", "*.cu")) + glob.glob(
-            path.join(extensions_dir, "*.cu")
-        )
+    source_cuda = glob.glob(path.join(extensions_dir, "**", "*.cu")) + glob.glob(
+        path.join(extensions_dir, "*.cu")
+    )
 
     sources = [main_source] + sources
 
